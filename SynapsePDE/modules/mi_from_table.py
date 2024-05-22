@@ -1,5 +1,3 @@
-# python3 /home/shuvaev/Dropbox/codes/python/SynapsePDE/mi_from_table.py
-
 import math
 import numpy as np
 import pandas as pd
