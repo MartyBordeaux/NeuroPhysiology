@@ -1,4 +1,3 @@
-# python3 /home/shuvaev/MEGA/codes/python/SynapsePDE/LAUNCH.py
 import numpy as np
 import pandas as pd
 pd.options.display.float_format = '{:.2e}'.format
