@@ -6,7 +6,7 @@ import timeit
 
 import modules.pars_synapse as p
 import modules.pde_synapse as syn
-import modules.mi_from_table as m
+import modules.miProcessing as m
 
 # HYPERPARAMETERS
 dr = p.diffusion['R_syn']/100 # step = 10 nm
@@ -39,4 +39,8 @@ def retrieveData(imp_number, clearance):
     x.drop(columns=["Unnamed: 0"], inplace = True)
     return x
 
+
+X = m.processingMI(path_to_solutions = <PATH>, path_to_MI_folder = <PATH>)
+X.createLong(saveTable = True)
+X.calculateMaxMI(saveTable = True)
 
