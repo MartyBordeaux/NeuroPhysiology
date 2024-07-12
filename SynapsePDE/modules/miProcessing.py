@@ -1,5 +1,3 @@
-# python3 /home/shuvaev/MEGA/codes/python/SynapsePDE/2024.07.09_miProcessing.py
-
 import os
 import pandas as pd
 import numpy as np
