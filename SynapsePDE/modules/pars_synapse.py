@@ -46,5 +46,6 @@ def f_inter(r):
     return s
 
 # __________ impulses and clearance parameters
-impls = [1,5,10,50,100]
-clrnc = [.0, .001, .005, .01, .05, .1, .5]
+impls = [1,5,10,50,100] # the number of impulses within the period of 2E5 usec (200 msec) stimulation duration
+freqs = np.array(impls)/stim_duration # kHz
+clearance_rates = [0.0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5]
