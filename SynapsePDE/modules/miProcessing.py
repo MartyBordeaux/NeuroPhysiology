@@ -4,40 +4,31 @@ import os
 import pandas as pd
 import numpy as np
 
+import pars_synapse as p
 
-
-impls = [1,5,10,50,100]
-clrnc = [.0, .001, .005, .01, .05, .1, .5]
-
-
+""" This module calculates the mutual information from the tables of solutions, which are supposed to be in the seperate folder """
 
 
 
 
 class processingMI:
     def __init__(self, path_to_solutions, path_to_MI_folder):
-        self.pathMI = path_to_MI_folder
-        self.pathSL = path_to_solutions
-
-
-
+        self.pathMI = path_to_MI_folder # wher to store the results of MI calculation
+        self.pathSL = path_to_solutions # the source folder with the solution of PDE tables
 
     def retrieveSolution(imp_number, clearance, solutionStep):
         try:
-            x = pd.read_csv( path_to_archive + f'sol/SOL{solutionStep}_imp{imp_number/100}_clrnc{clearance}.csv' )
+            x = pd.read_csv( self.pathSL + f'sol/SOL{solutionStep}_imp{imp_number/100}_clrnc{clearance}.csv' )
             x.drop(columns=["Unnamed: 0"], inplace = True)
         except FileNotFoundError:
             print(f'No solution for {imp_number} impulses and {clearance} clearance')
         return x
 
-
-
-
     def calculateMI(self, TDUR, TSTEP, saveTable=False):
-        Tstep = TSTEP
-        Tdur  = TDUR
+        Tstep = 2 # can be changed
+        Tdur  = 10000
 
-        def joint_prob_table( data1, data2 ):
+        def joint_prob_table( data1, data2 ): # calculation of joint probabiliyies
             a = list(data1); b = list(data2)
             M = np.zeros( (len(a), len(b)) ).astype(float)
             for i in range(len(a)):
@@ -45,7 +36,7 @@ class processingMI:
                     M[i,j] = max(0., a[i] + b[j])
             M = M/sum(sum(M))
             return M
-        def mi_vals(lA, lB, data):
+        def mi_vals(lA, lB, data): # THIS CALCULATES THE MUTUAL INFORMATION
             mmi = []
             for i in np.arange(start = 0, stop = Tdur, step = Tstep):
                 m = 0
@@ -61,14 +52,14 @@ class processingMI:
                 mmi.append(m)
             return pd.DataFrame( mmi, index = np.arange(start = 0, stop = Tdur, step = Tstep) )
 
-        for imp in tqdm(impls):
+        for imp in tqdm(p.impls):
             df = pd.DataFrame({'lag': np.arange(0, TDUR, TSTEP )})
             try:
                 pd.read_csv( self.pathMI + f'MI{TSTEP}_imp{imp/100}_0rB.csv' )
             except FileNotFoundError:
-                for cl in clrnc:
+                for cl in p.clrnc:
                     try:
-                        x = pd.read_csv( self.pathSL + f'SOL{SOL_STEP}_imp{imp/100}_diss{cl}.csv' )
+                        x = pd.read_csv( self.pathSL + f'SOL{SOL_STEP}_imp{imp/100}_clearance{cl}.csv' )
                         mi_tab = mi_vals(0, rB, retrieveData(imp,  cl, SOL_STEP))
                         df[str(cl)] = mi_tab.values
                     except FileNotFoundError:
@@ -78,7 +69,7 @@ class processingMI:
 
 
 
-    def createLong(self, saveTable = False):
+    def createLong(self, saveTable = False): # reshaping the mutual information tables and combining all calculations together
         df = pd.DataFrame({'lag':[], 'clrnc': [], 'value': [], 'imps': [], 'lctn': []})
         miFiles = os.listdir(self.pathMI)
         miFiles = [value for value in miFiles if value != 'ALL_MI_Hz.csv']
@@ -96,10 +87,7 @@ class processingMI:
             df.to_csv(self.pathMI + 'ALL_MI_Hz.csv', encoding='utf-8', index=False, mode = 'w', header=True)
         return df
 
-
-
-
-    def calculateMaxMI(self, saveTable = False):
+    def calculateMaxMI(self, saveTable = False): # calculation of maximal values of MI
         inDF = processingMI.createLong(self, saveTable = False)
         imp = np.unique(inDF['imps'].values.astype(float))
         clr = np.unique(inDF['clrnc'].values.astype(float))
@@ -118,22 +106,3 @@ class processingMI:
         if saveTable:
             maxMI.to_csv(self.pathMI + 'ALL_maxMI_Hz.csv', encoding='utf-8', index=False, mode = 'w', header=True)
         return maxMI
-
-    def merge_Hz_kHz_in_0rB(self, saveTable = False):
-        Hz = processingMI.createMax(self, saveTable = False)
-        kHz = pd.read_csv(self.pathMI + 'ALL_MI_max.csv')
-        kHz = kHz[ kHz['lctn'] == '0rB' ]
-        kHz = kHz[['MI', 'imps','diss', 'freqs']]
-        kHz.rename({'MI': 'maxVal', 'imps': 'imps', 'diss': 'clrnc', 'freqs': 'freq'}, axis=1, inplace=True)
-        kHz['freq'] = kHz['freq'].values * 1000
-        dfFin = pd.concat( [Hz, kHz] )
-        if saveTable:
-            dfFin.to_csv(self.pathMI + 'Final_maxMI.csv', encoding='utf-8', index=True, mode = 'w', header=True)
-        return dfFin
-
-
-X = processingMI(path_to_solutions = '/home/shuvaev/MEGA/vrem/calcs/sols/', path_to_MI_folder = '/home/shuvaev/MEGA/vrem/calcs/mi/')
-X.createLong(saveTable = True)
-X.calculateMaxMI(saveTable = True)
-
-#print(X.merge_Hz_kHz_in_0rB(saveTable=False))
