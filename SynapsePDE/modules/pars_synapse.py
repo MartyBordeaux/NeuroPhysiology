@@ -45,7 +45,6 @@ def f_inter(r):
         s += xi_s[i]*r**i
     return s
 
-# __________ stimulation in our experiment
-record_time = 5.00E+06 # [usec]
-stim_start  = 1.00E+04 # [usec]
-stim_end    = 1.32E+05 # [usec]
+# __________ impulses and clearance parameters
+impls = [1,5,10,50,100]
+clrnc = [.0, .001, .005, .01, .05, .1, .5]
