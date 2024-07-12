@@ -22,14 +22,11 @@ rA = syn_border;                        print('rA: ', rA*dr, ' nm') # the distan
 rB = int((pm_border + syn_border)/2);   print('rB: ', rB*dr, ' nm') # the distance from the synapse center to the center of the porous medium
 rC = pm_border;                         print('rC: ', rC*dr, ' nm') # the distance from the synapse center to the edge of the porous medium
 
-impls = [1,5,10,50,100] # the number of impulses within the period of 2E5 usec (200 msec) stimulation duration
-freqs = np.array(impls)/stim_duration # kHz
-clearance_rates = [0.0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5]
 
 # writing solution to csv
-for i in impls:
-    for j in clearance_rates:
-        sl = syn.sol_pde( impulses_number = i, uptake_rate = j, delay = 0 )
+for i in p.impls:
+    for j in p.clearance_rates:
+        sl = syn.sol_pde( impulses_number = i, uptake_rate = j )
         s  = sl.sol_ode()
         s.to_csv(path_to_working_dir + f'/solutions/SOL_imp{i}_clearance{j}.csv', encoding='utf-8', index=True, mode = 'w', header=True)
 
